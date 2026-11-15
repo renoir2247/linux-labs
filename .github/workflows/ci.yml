@@ -1,0 +1,36 @@
+name: Bash Script CI
+
+on:
+  push:
+    branches: ["main"]
+  pull_request:
+    branches: ["main"]
+
+env:
+  LANG: C.UTF-8
+  LC_ALL: C.UTF-8
+
+jobs:
+  lint-and-test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Run ShellCheck linter
+        uses: ludeeus/action-shellcheck@2.0.0
+        with:
+          severity: error
+          scandir: "."
+
+      - name: Run unit test
+        run: |
+          set -euo pipefail
+          chmod +x app_calculator.sh
+          output=$(./app_calculator.sh 5 10)
+          echo "Вывод скрипта: '$output'"
+          if ! echo "$output" | grep -q "^Сумма: 15$"; then
+            echo "Тест провален: '$output'"
+            exit 1
+          fi
+          echo "Тест успешно пройден!"
